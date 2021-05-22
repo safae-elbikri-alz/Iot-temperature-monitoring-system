@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<head>
+   <title>Temperature evolution</title>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+   <link   rel="shortcut icon" href="{{ url_for('static', filename='img/icone.ico') }}">
+   <style>
+		.container{
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			text-align: center;
+		}	
+
+		.led-container {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			text-align: center;
+			padding: 20px;
+		}
+
+		.led-box {
+			height: 30px;
+			width: 10%;
+			margin: 10px 0;
+			float: left;
+		}
+
+		.led-red-active {
+			margin: 0 auto;
+			width: 24px;
+			height: 24px;
+			background-color: #f00;
+			border-radius: 50%;
+			box-shadow: rgba(0, 0, 0, 0.2) 0 0px 7px 0px, inset #631b1be0 0 -1px 9px, #ff0000 0 1px 15px;
+		}
+
+		.led-red-inactive {
+			margin: 0 auto;
+			width: 24px;
+			height: 24px;
+			background-color: #610000;
+			border-radius: 50%;
+			box-shadow: rgba(0, 0, 0, 0.1) 0 -1px 7px 0px, inset #441313 0 -1px 9px;
+		}
+
+		.led-green-active {
+			margin: 0 auto;
+			width: 24px;
+			height: 24px;
+			background-color: #ABFF00;
+			border-radius: 50%;
+			box-shadow: rgba(0, 0, 0, 0.2) 0 0px 7px 0px, inset #34460f 0 -1px 9px, #6ac500 0 1px 15px;
+		}
+
+		.led-green-inactive {
+			margin: 0 auto;
+			width: 24px;
+			height: 24px;
+			background-color: rgb(67, 100, 0);
+			border-radius: 50%;
+			box-shadow: rgba(0, 0, 0, 0.1) 0 0px 7px 0px, inset #34460f 0 -1px 9px;
+		}
+
+		.led-orange-active {
+			margin: 0 auto;
+			width: 24px;
+			height: 24px;
+			background-color: rgb(255, 225, 56);
+			border-radius: 50%;
+			box-shadow: rgba(0, 0, 0, 0.2) 0 0px 7px 0px, inset rgb(145, 87, 0) 0 -1px 9px, rgb(195, 165, 0) 0 1px 15px;
+		}
+
+		.led-orange-inactive {
+			margin: 0 auto;
+			width: 24px;
+			height: 24px;
+			background-color: rgb(121, 88, 0);
+			border-radius: 50%;
+			box-shadow: rgba(0, 0, 0, 0.1) 0 0px 7px 0px, inset rgb(145, 87, 0) 0 -1px 9px;
+		}
+   </style>
+</head>
+
+<body>
+	<div>
+		<h1 style="text-align: center;">EVOLUTION TEMPERATURE EN TEMPS REEL</h1>
+	</div>
+	<div class="container">
+		<div style="width:30%; margin: 0 auto;" >
+			<canvas id="canvas1"></canvas>
+			<h4>Temperature moyenne = <span id="tmp1"></span></h4>
+		</div>
+		<div style="width:30%; margin: 0 auto;" >
+			<canvas id="canvas2"></canvas>
+			<h4>Temperature moyenne = <span id="tmp2"></span></h4>
+		</div>
+		<div style="width:30%; margin: 0 auto;" >
+			<canvas id="canvas3"></canvas>
+			<h4>Temperature moyenne = <span id="tmp3"></span></h4>
+		</div>
+	</div>
+	<div style="display: flex;text-align: center;justify-content: center;">
+		<h2>Moyenne des 3 graphes = <span id="tmpG"></span></h2>
+	</div>
+
+	<div class="led-container">
+		<div class="led-box">
+			<div class="led-green-inactive" id="led-green"></div>
+		</div>
+		<div class="led-box">
+		  	<div class="led-orange-inactive" id="led-orange"></div>
+		</div>
+		<div class="led-box">
+		  	<div class="led-red-inactive" id="led-red"></div>
+		</div>
+	</div>
+
+	<div style="display: flex; justify-content: center;">
+		<h3>ENSA Kenitra 2019/2020</h3>
+	</div>
+</body>
+</html>
+<script>
+	window.chartColors = {
+		red: 'rgb(255, 99, 132)',
+		orange: 'rgb(255, 159, 64)',
+		yellow: 'rgb(255, 205, 86)',
+		green: 'rgb(75, 192, 192)',
+		blue: 'rgb(54, 162, 235)',
+		purple: 'rgb(153, 102, 255)',
+		grey: 'rgb(201, 203, 207)'
+    };
+	var config1 = {
+			type: 'line',
+			data: {
+				labels: Array(10).fill(0).map((x, y) => x + y),
+				datasets: [{
+					label: 'Thermometer 1',
+					fill: false,
+					backgroundColor: window.chartColors.blue,
+					borderColor: window.chartColors.blue,
+					data: []
+				}]
+			},
+			options: {
+				responsive: true,
+				aspectRatio: 1,
+				title: {
+					display: true,
+					text: 'Temperature evolution'
+				},
+				legend: {
+					position: 'top',
+					labels: {
+						fontColor: '#000'
+					}
+				},
+				tooltips: {
+					mode: 'index',
+					intersect: false,
+				},
+				hover: {
+					mode: 'nearest',
+					intersect: true
+				},
+				scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: 'Seconds'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: 'Value in C'
+						}
+					}]
+				}
+			}
+	};
+	var config2 = {
+			type: 'line',
+			data: {
+				labels: Array(10).fill(0).map((x, y) => x + y),
+				datasets: [{
+					label: 'Thermometer 2',
+					fill: false,
+					backgroundColor: window.chartColors.yellow,
+					borderColor: window.chartColors.yellow,
+					data: []
+				}]
+			},
+			options: {
+				responsive: true,
+				aspectRatio: 1,
+				title: {
+					display: true,
+					text: 'Temperature evolution'
+				},
+				legend: {
+					position: 'top',
+					labels: {
+						fontColor: '#000'
+					}
+				},
+				tooltips: {
+					mode: 'index',
+					intersect: false,
+				},
+				hover: {
+					mode: 'nearest',
+					intersect: true
+				},
+				scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: 'Seconds'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: 'Value in C'
+						}
+					}]
+				}
+			}
+	};
+	var config3 = {
+			type: 'line',
+			data: {
+				labels: Array(10).fill(0).map((x, y) => x + y),
+				datasets: [{
+					label: 'Thermometer 3',
+					fill: false,
+					backgroundColor: window.chartColors.purple,
+					borderColor: window.chartColors.purple,
+					data: []
+				}]
+			},
+			options: {
+				responsive: true,
+				aspectRatio: 1,
+				title: {
+					display: true,
+					text: 'Temperature evolution'
+				},
+				legend: {
+					position: 'top',
+					labels: {
+						fontColor: '#000'
+					}
+				},
+				tooltips: {
+					mode: 'index',
+					intersect: false,
+				},
+				hover: {
+					mode: 'nearest',
+					intersect: true
+				},
+				scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: 'Seconds'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: 'Value in C'
+						}
+					}]
+				}
+			}
+	};
+	var t;
+
+	function loadData() {
+		var xhttp;
+		var moyen
+		var url="/data"
+		xhttp=new XMLHttpRequest()
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var myData = xhttp.responseText
+				var parsedData = JSON.parse(myData)
+				var tempData1 = parsedData.temperature1
+				var tempData2 = parsedData.temperature2
+				var tempData3 = parsedData.temperature3
+				var moyen1=parsedData.moyen1
+				var moyen2=parsedData.moyen2
+				var moyen3=parsedData.moyen3
+				var moyenG=parsedData.moyenG
+				var ledData=parsedData.leds
+				// myData=myData.replace(/\s|\[|\]|\n/g, "").split(',').map(Number);
+				config1["data"]["datasets"][0]["data"]=tempData1.reverse();
+				config2["data"]["datasets"][0]["data"]=tempData2.reverse();
+				config3["data"]["datasets"][0]["data"]=tempData3.reverse();
+				chart1.update();
+				chart2.update();
+				chart3.update();
+
+				var tmp;
+				
+				tmp=document.getElementById("tmp1")
+				tmp.textContent=moyen1
+
+				tmp=document.getElementById("tmp2")
+				tmp.textContent=moyen2
+
+				tmp=document.getElementById("tmp3")
+				tmp.textContent=moyen3
+
+				tmp=document.getElementById("tmpG")
+				moyenG=parseFloat(moyenG).toFixed(1)
+				tmp.textContent=moyenG
+
+				var greenLED = document.getElementById("led-green")
+				var orangeLED = document.getElementById("led-orange")
+				var redLED = document.getElementById("led-red")
+
+				if(ledData[0]==1){
+					greenLED.classList.add("led-green-active")
+					greenLED.classList.remove("led-green-inactive")
+					orangeLED.classList.remove("led-orange-active")
+					orangeLED.classList.add("led-orange-inactive")
+					redLED.classList.remove("led-red-active")
+					redLED.classList.add("led-red-inactive")
+				}
+				else if(ledData[1]==1){
+					greenLED.classList.remove("led-green-active")
+					greenLED.classList.add("led-green-inactive")
+					orangeLED.classList.add("led-orange-active")
+					orangeLED.classList.remove("led-orange-inactive")
+					redLED.classList.remove("led-red-active")
+					redLED.classList.add("led-red-inactive")
+				}
+				else if(ledData[2]==1){
+					greenLED.classList.remove("led-green-active")
+					greenLED.classList.add("led-green-inactive")
+					orangeLED.classList.remove("led-orange-active")
+					orangeLED.classList.add("led-orange-inactive")
+					redLED.classList.add("led-red-active")
+					redLED.classList.remove("led-red-inactive")
+				}
+			}
+		}
+		xhttp.open("GET", url, true)
+		xhttp.send()
+	}
+	
+	window.onload = function() {
+		var ctx1 = document.getElementById('canvas1').getContext('2d');
+		var ctx2 = document.getElementById('canvas2').getContext('2d');
+		var ctx3 = document.getElementById('canvas3').getContext('2d');
+		chart1 = new Chart(ctx1, config1);
+		chart2 = new Chart(ctx2, config2);
+		chart3 = new Chart(ctx3, config3);
+		window.setInterval(function(){
+			loadData()
+		},1000);
+	};
+</script>
